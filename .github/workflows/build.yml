@@ -14,9 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: browser-actions/setup-chrome@latest
-      - name: Use Node.js ${{ matrix.node-version }}        uses: actions/setup-node@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node-version }}      - name: Cache node modules
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules
         id: cache-nodemodules
         uses: actions/cache@v2
         env:
@@ -24,7 +27,8 @@ jobs:
         with:
           # caching node_modules
           path: node_modules
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}          restore-keys: |
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
@@ -48,12 +52,18 @@ jobs:
         id: changelog
         uses: TriPSs/conventional-changelog-action@v3
         with:
-          github-token: ${{ secrets.WORKSHOP6_GITHUB_TOKEN }}          output-file: "false"
+          github-token: ${{ secrets.WORKSHOP6_GITHUB_TOKEN }}
+          output-file: "false"
 
       - name: Create Release
         uses: actions/create-release@v1
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}        env:
-          GITHUB_TOKEN: ${{ secrets.WORKSHOP6_GITHUB_TOKEN }}        with:
-          tag_name: ${{ steps.changelog.outputs.tag }}          release_name: ${{ steps.changelog.outputs.tag }}          body: ${{ steps.changelog.outputs.clean_changelog }}      - name: Deploy
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.WORKSHOP6_GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.changelog.outputs.tag }}
+          release_name: ${{ steps.changelog.outputs.tag }}
+          body: ${{ steps.changelog.outputs.clean_changelog }}
+      - name: Deploy
         run: |
           npm run deploy
